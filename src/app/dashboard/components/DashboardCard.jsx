@@ -1,4 +1,5 @@
-// Updated DashboardCard component - supports loading state
+"use client";
+
 export default function DashboardCard({
   title,
   value,

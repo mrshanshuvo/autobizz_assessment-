@@ -1,3 +1,4 @@
+// Update your api.js file
 import axios from "axios";
 
 const API_BASE =
@@ -14,14 +15,14 @@ export async function getAuthorize() {
   return res.data.token; // token string
 }
 
-// Get sales
+// Get sales - ADD LOGGING
 export async function getSales({ token, params }) {
   const res = await axios.get(`${API_BASE}/sales`, {
     headers: { "X-AUTOBIZZ-TOKEN": token },
     params: {
       startDate: params.startDate || "",
       endDate: params.endDate || "",
-      priceMin: params.minPrice || "",
+      priceMin: params.priceMin || "", // Make sure this is priceMin
       email: params.email || "",
       phone: params.phone || "",
       sortBy: params.sortBy || "date",
@@ -30,5 +31,6 @@ export async function getSales({ token, params }) {
       before: params.before || "",
     },
   });
+
   return res.data;
 }

@@ -1,4 +1,5 @@
-// Updated RecentActivities component - only uses API data
+"use client";
+
 export default function RecentActivities({
   salesData = [],
   isLoading = false,
@@ -101,7 +102,7 @@ export default function RecentActivities({
             key={i}
             className="flex items-center p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all duration-200"
           >
-            <div className="shrink-0 w-10 h-10 bg-grbg-linear-to-br-blue-50 to-indigo-50 border border-blue-100 rounded-lg flex items-center justify-center mr-3">
+            <div className="shrink-0 w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg flex items-center justify-center mr-3">
               <span className="text-lg">{getIcon(item.type)}</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -133,7 +134,7 @@ export default function RecentActivities({
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">
-                ${totalValue.toLocaleString()}
+                ৳{totalValue.toLocaleString()}
               </p>
               <p className="text-xs text-green-800 font-medium">Total Value</p>
             </div>

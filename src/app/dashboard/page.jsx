@@ -1,4 +1,4 @@
-// Updated DashboardPage component - NO STATIC DATA
+// Updated DashboardPage component using API data
 "use client";
 import { useState, useMemo } from "react";
 import Filters from "./components/Filters";
@@ -9,11 +9,48 @@ import RecentActivities from "./components/RecentActivities";
 import DashboardCard from "./components/DashboardCard";
 
 export default function DashboardPage() {
-  const [filters, setFilters] = useState({ limit: 50 });
+  // Initialize with default values for API
+  const [filters, setFilters] = useState({
+    limit: 50,
+    startDate: "",
+    endDate: "",
+    minPrice: "",
+    email: "",
+    phone: "",
+    after: "",
+    before: "",
+  });
+
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  const salesQuery = useSalesQuery({ ...filters, sortBy, sortOrder });
+  // Prepare API parameters - MATCH THE API DOCUMENTATION
+  const apiParams = useMemo(() => {
+    const params = {
+      limit: 50,
+      sortBy,
+      sortOrder,
+    };
+
+    // Add date filters if provided
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
+
+    // Add other filters if provided - USE CORRECT PARAM NAMES
+    if (filters.minPrice) params.priceMin = filters.minPrice;
+    if (filters.email) params.email = filters.email;
+    if (filters.phone) params.phone = filters.phone;
+
+    // Add pagination tokens
+    if (filters.after) params.after = filters.after;
+    if (filters.before) params.before = filters.before;
+
+    return params;
+  }, [filters, sortBy, sortOrder]);
+
+  // Fetch sales data from API with all parameters
+  const salesQuery = useSalesQuery(apiParams);
+
   const data = salesQuery.data || {
     results: { Sales: [], TotalSales: [] },
     pagination: {},
@@ -25,7 +62,7 @@ export default function DashboardPage() {
     [data.results.TotalSales]
   );
 
-  // Calculate dashboard metrics ONLY from API data
+  // Calculate dashboard metrics from API data
   const dashboardMetrics = useMemo(() => {
     if (!items.length || !series.length) {
       return {
@@ -37,16 +74,16 @@ export default function DashboardPage() {
       };
     }
 
-    // Calculate total sales from the series data
+    // Total sales from TotalSales series (last 30 days)
     const totalSales = series.reduce(
       (sum, day) => sum + (day.totalSale || 0),
       0
     );
 
-    // Calculate total number of transactions
+    // Total transactions count (current page)
     const totalTransactions = items.length;
 
-    // Calculate average order value from actual sales items
+    // Average order value from current items
     const totalSalesFromItems = items.reduce(
       (sum, item) => sum + (item.price || 0),
       0
@@ -54,15 +91,13 @@ export default function DashboardPage() {
     const avgOrderValue =
       totalTransactions > 0 ? totalSalesFromItems / totalTransactions : 0;
 
-    // Count unique customers from sales data
+    // Unique customers by email from current items
     const uniqueCustomers = new Set(
-      items
-        .map((item) => item.customerName || item.email || item.phone)
-        .filter(Boolean) // Remove null/undefined
+      items.map((item) => item.customerEmail).filter(Boolean)
     );
     const activeCustomers = uniqueCustomers.size;
 
-    // Calculate sales growth from the series data
+    // Sales growth: compare last day with previous day
     let salesGrowth = 0;
     if (series.length >= 2) {
       const yesterday = series[series.length - 2]?.totalSale || 0;
@@ -83,29 +118,59 @@ export default function DashboardPage() {
 
   const tokens = data.pagination || {};
 
-  const applyFilters = (f) =>
-    setFilters((prev) => ({ ...prev, ...f, after: "", before: "" }));
+  // Apply filters - reset pagination when filters change
+  const applyFilters = (newFilters) => {
+    console.log(newFilters);
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+      minPrice: newFilters.minPrice || "",
+      after: "",
+      before: "",
+    }));
+  };
+
+  // Handle sort - trigger API call with new sort parameters
   const handleSort = (field, order) => {
     setSortBy(field);
     setSortOrder(order);
   };
+
+  // Pagination functions
   const nextPage = () => {
-    if (tokens.after)
-      setFilters((prev) => ({ ...prev, after: tokens.after, before: "" }));
+    if (tokens.after) {
+      setFilters((prev) => ({
+        ...prev,
+        after: tokens.after,
+        before: "",
+      }));
+    }
   };
+
   const prevPage = () => {
-    if (tokens.before)
-      setFilters((prev) => ({ ...prev, before: tokens.before, after: "" }));
+    if (tokens.before) {
+      setFilters((prev) => ({
+        ...prev,
+        before: tokens.before,
+        after: "",
+      }));
+    }
   };
 
-  // Format the series for the chart from API data
-  const formattedSeries = series.map((item) => ({
-    date: item.day ? formatChartDate(item.day) : "",
-    totalSales: item.totalSale || 0,
-    originalDate: item.day,
-  }));
+  // Format series for chart
+  const formattedSeries = useMemo(() => {
+    return series.map((item) => {
+      const date = item.day ? new Date(item.day) : null;
+      return {
+        date: date
+          ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : "",
+        totalSales: item.totalSale || 0,
+        originalDate: item.day,
+      };
+    });
+  }, [series]);
 
-  // Helper function to format date for chart
   function formatChartDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -120,19 +185,19 @@ export default function DashboardPage() {
         </h1>
         <p className="text-gray-600 mt-2">
           {items.length > 0
-            ? `Showing ${items.length} transactions`
+            ? `Showing ${items.length} transactions (${series.length} days of data)`
             : "No data available"}
         </p>
       </div>
 
-      {/* Dashboard Metrics Cards - ALL FROM API DATA */}
+      {/* Dashboard Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <DashboardCard
           title="Total Sales"
           value={
             dashboardMetrics.totalSales > 0
-              ? `$${dashboardMetrics.totalSales.toLocaleString()}`
-              : "$0"
+              ? `৳${dashboardMetrics.totalSales.toLocaleString()}`
+              : "৳0"
           }
           icon="💰"
           trend={dashboardMetrics.salesGrowth}
@@ -152,8 +217,8 @@ export default function DashboardPage() {
           title="Avg. Order"
           value={
             dashboardMetrics.avgOrderValue > 0
-              ? `$${dashboardMetrics.avgOrderValue.toFixed(2)}`
-              : "$0.00"
+              ? `৳${dashboardMetrics.avgOrderValue.toFixed(2)}`
+              : "৳0.00"
           }
           icon="📊"
           description="Per transaction"
@@ -168,7 +233,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Loading State */}
+      {/* Loading, Error, and Main Content */}
       {salesQuery.isLoading && (
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
           <div className="flex flex-col items-center justify-center space-y-4 py-8">
@@ -181,7 +246,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Error State */}
       {salesQuery.error && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
           <div className="flex items-start">
@@ -191,7 +255,8 @@ export default function DashboardPage() {
             <div>
               <h3 className="font-semibold text-red-800">Error Loading Data</h3>
               <p className="text-red-600 text-sm mt-1">
-                Unable to fetch sales data. Please try again.
+                {salesQuery.error.message ||
+                  "Unable to fetch sales data. Please try again."}
               </p>
               <button
                 onClick={() => salesQuery.refetch()}
@@ -204,60 +269,70 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main Content - Only show when data is loaded */}
-      {!salesQuery.isLoading && !salesQuery.error && items.length > 0 && (
+      {!salesQuery.isLoading && !salesQuery.error && (
         <>
           <Filters onApply={applyFilters} initial={filters} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <SalesChart
-                series={formattedSeries}
-                isLoading={salesQuery.isLoading}
+          {items.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <SalesChart
+                    series={formattedSeries}
+                    isLoading={salesQuery.isLoading}
+                  />
+                </div>
+                <div>
+                  <RecentActivities
+                    salesData={items}
+                    isLoading={salesQuery.isLoading}
+                  />
+                </div>
+              </div>
+              <SalesTable
+                items={items}
+                onSort={handleSort}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onNext={nextPage}
+                onPrev={prevPage}
+                tokens={tokens}
+                filters={filters}
               />
+            </>
+          ) : (
+            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📊</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No Sales Data
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  No transactions found with the current filters.
+                </p>
+                <button
+                  onClick={() =>
+                    setFilters({
+                      limit: 50,
+                      startDate: "",
+                      endDate: "",
+                      minPrice: "",
+                      email: "",
+                      phone: "",
+                      after: "",
+                      before: "",
+                    })
+                  }
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Reset Filters
+                </button>
+              </div>
             </div>
-            <div>
-              <RecentActivities
-                salesData={items}
-                isLoading={salesQuery.isLoading}
-              />
-            </div>
-          </div>
-
-          <SalesTable
-            items={items}
-            onSort={handleSort}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onNext={nextPage}
-            onPrev={prevPage}
-            tokens={tokens}
-            isLoading={salesQuery.isLoading}
-          />
+          )}
         </>
-      )}
-
-      {/* Empty State - When no data but loaded successfully */}
-      {!salesQuery.isLoading && !salesQuery.error && items.length === 0 && (
-        <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">📊</span>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Sales Data
-            </h3>
-            <p className="text-gray-600 mb-6">
-              No transactions found with the current filters.
-            </p>
-            <button
-              onClick={() => setFilters({ limit: 50 })}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Reset Filters
-            </button>
-          </div>
-        </div>
       )}
     </div>
   );
