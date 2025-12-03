@@ -1,37 +1,45 @@
-// Home page component
+import { FiArrowRight } from "react-icons/fi";
+
 export default function Home() {
   return (
-    <div className="p-4 sm:p-6 md:p-8 lg:p-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-linear-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white mb-8">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-            AutoBizz Assessment
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
+      <div className="max-w-3xl w-full mx-auto">
+        {/* Thin top accent line */}
+        <div className="h-px bg-[#050E3C] mb-8 sm:mb-12 md:mb-16"></div>
+
+        {/* Main content */}
+        <div className="space-y-6 sm:space-y-8">
+          {/* Heading */}
+          <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-light text-[#050E3C] tracking-tight leading-snug sm:leading-tight">
+            AutoBizz
+            <br />
+            Assessment
           </h1>
-          <p className="text-blue-100 mt-3 text-lg sm:text-xl">
+
+          {/* Subtitle */}
+          <p className="text-lg sm:text-xl md:text-2xl text-[#050E3C] font-light tracking-wide">
             Junior Frontend Engineer — Dashboard Project
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+
+          {/* CTA Button - The ONLY red element */}
+          <div className="pt-6 sm:pt-8">
             <a
               href="/dashboard"
-              className="inline-flex items-center justify-center bg-white text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg shadow-md"
+              className="inline-flex items-center justify-center bg-[#DC0000] text-white px-8 sm:px-10 md:px-12 py-3 sm:py-4 text-base sm:text-lg font-medium tracking-wide hover:bg-[#B00000] transition-colors duration-200 w-full sm:w-auto group"
             >
-              Go to Dashboard
-              <svg
-                className="w-5 h-5 ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
+              <span className="whitespace-nowrap">GO TO DASHBOARD</span>
+              <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 group-hover:translate-x-1 transition-transform duration-200" />
             </a>
           </div>
         </div>
+
+        {/* Thin bottom accent line */}
+        <div className="h-px bg-[#050E3C] mt-8 sm:mt-12 md:mt-16"></div>
+
+        {/* Minimal footer text */}
+        <p className="text-xs sm:text-sm text-[#050E3C] opacity-40 mt-6 sm:mt-8 tracking-widest uppercase text-center sm:text-left">
+          Confident Simplicity
+        </p>
       </div>
     </div>
   );

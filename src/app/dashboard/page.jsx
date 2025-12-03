@@ -180,10 +180,10 @@ export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#050E3C]">
           Sales Dashboard
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-[#050E3C]/60 mt-2">
           {items.length > 0
             ? `Showing ${items.length} transactions (${series.length} days of data)`
             : "No data available"}
@@ -191,7 +191,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Dashboard Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         <DashboardCard
           title="Total Sales"
           value={
@@ -235,32 +235,38 @@ export default function DashboardPage() {
 
       {/* Loading, Error, and Main Content */}
       {salesQuery.isLoading && (
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-[#050E3C]/10 shadow-sm">
           <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <div className="w-12 h-12 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-3 border-[#050E3C] border-t-transparent rounded-full animate-spin"></div>
             <div className="text-center">
-              <p className="text-gray-700 font-medium">Loading sales data...</p>
-              <p className="text-gray-500 text-sm mt-1">Fetching from API</p>
+              <p className="text-[#050E3C] font-medium">
+                Loading sales data...
+              </p>
+              <p className="text-[#050E3C]/60 text-sm mt-1">
+                Fetching from API
+              </p>
             </div>
           </div>
         </div>
       )}
 
       {salesQuery.error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+        <div className="bg-[#050E3C]/5 border border-[#050E3C]/20 rounded-2xl p-6">
           <div className="flex items-start">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 shrink-0">
-              <span className="text-red-600 text-xl">⚠️</span>
+            <div className="w-10 h-10 bg-[#050E3C]/10 rounded-lg flex items-center justify-center mr-3 shrink-0 border border-[#050E3C]/20">
+              <span className="text-[#050E3C] text-xl">⚠️</span>
             </div>
             <div>
-              <h3 className="font-semibold text-red-800">Error Loading Data</h3>
-              <p className="text-red-600 text-sm mt-1">
+              <h3 className="font-semibold text-[#050E3C]">
+                Error Loading Data
+              </h3>
+              <p className="text-[#050E3C]/70 text-sm mt-1">
                 {salesQuery.error.message ||
                   "Unable to fetch sales data. Please try again."}
               </p>
               <button
                 onClick={() => salesQuery.refetch()}
-                className="mt-3 px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                className="mt-3 px-4 py-2 bg-[#DC0000] text-white text-sm rounded-lg hover:bg-[#DC0000]/90 transition-colors"
               >
                 Retry
               </button>
@@ -275,19 +281,17 @@ export default function DashboardPage() {
 
           {items.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <SalesChart
-                    series={formattedSeries}
-                    isLoading={salesQuery.isLoading}
-                  />
-                </div>
-                <div>
-                  <RecentActivities
-                    salesData={items}
-                    isLoading={salesQuery.isLoading}
-                  />
-                </div>
+              <div className="lg:col-span-2">
+                <SalesChart
+                  series={formattedSeries}
+                  isLoading={salesQuery.isLoading}
+                />
+              </div>
+              <div>
+                <RecentActivities
+                  salesData={items}
+                  isLoading={salesQuery.isLoading}
+                />
               </div>
               <SalesTable
                 items={items}
@@ -301,15 +305,15 @@ export default function DashboardPage() {
               />
             </>
           ) : (
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="bg-white p-8 rounded-2xl border border-[#050E3C]/10 shadow-sm">
               <div className="text-center py-12">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-[#050E3C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#050E3C]/10">
                   <span className="text-3xl">📊</span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-[#050E3C] mb-2">
                   No Sales Data
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-[#050E3C]/60 mb-6">
                   No transactions found with the current filters.
                 </p>
                 <button
@@ -325,7 +329,7 @@ export default function DashboardPage() {
                       before: "",
                     })
                   }
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="px-6 py-3 bg-[#DC0000] text-white rounded-lg hover:bg-[#DC0000]/90 transition-colors font-medium"
                 >
                   Reset Filters
                 </button>
